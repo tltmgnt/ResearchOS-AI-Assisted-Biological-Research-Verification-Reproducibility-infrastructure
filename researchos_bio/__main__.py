@@ -14,6 +14,7 @@ from .assurance import assemble_assurance
 from .pilot import assess_pilot
 from .external_audit import verify_external_audit
 from .pilot_comparison import evaluate_pilot_comparison
+from .pilot_statistics import evaluate_pilot_statistics
 
 
 def _read_json(path: str) -> dict:
@@ -85,6 +86,11 @@ def main(argv: list[str] | None = None) -> int:
     compare.add_argument("plan")
     compare.add_argument("observations")
     compare.add_argument("--output", help="write JSON paired comparison report")
+    stats = sub.add_parser("pilot-statistics", help="reconcile missing cases and describe paired uncertainty")
+    stats.add_argument("plan")
+    stats.add_argument("observations")
+    stats.add_argument("accounting")
+    stats.add_argument("--output", help="write JSON pilot statistics report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record) if hasattr(args, "record") else None
@@ -95,6 +101,16 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "pilot-statistics":
+            result = evaluate_pilot_statistics(
+                _read_json(args.plan), _read_json(args.observations),
+                _read_json(args.accounting))
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["minimum_sample_size_met"] else 2
         elif args.command == "compare-pilot":
             result = evaluate_pilot_comparison(_read_json(args.plan), _read_json(args.observations))
             output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
