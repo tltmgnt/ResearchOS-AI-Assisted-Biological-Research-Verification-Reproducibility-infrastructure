@@ -82,7 +82,7 @@ def main(argv: list[str] | None = None) -> int:
     external.add_argument("--output", help="write JSON external audit report")
     args = parser.parse_args(argv)
     try:
-        record = _read_json(args.record)
+        record = _read_json(args.record) if hasattr(args, "record") else None
         if args.command == "evaluate":
             result = evaluate_record(record)
             output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
