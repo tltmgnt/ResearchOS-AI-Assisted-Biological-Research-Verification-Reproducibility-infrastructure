@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import stat
 from pathlib import Path
 from typing import Any
 from zipfile import BadZipFile, ZipFile
@@ -30,11 +31,17 @@ def _load_json(data: bytes, name: str) -> dict[str, Any]:
 
 
 def verify_audit_package(path: str | Path, expected_package_sha256: str,
-                         max_total_bytes: int = 500_000_000) -> dict[str, Any]:
+                         max_total_bytes: int = 500_000_000,
+                         max_members: int = 10_000,
+                         max_metadata_bytes: int = 10_000_000) -> dict[str, Any]:
     """Verify archive members and their SHA-256 without extracting ZIP paths."""
     expected = _digest(expected_package_sha256, "expected_package_sha256")
     if type(max_total_bytes) is not int or max_total_bytes < 1:
         raise RecordError("max_total_bytes must be positive integer")
+    if type(max_members) is not int or not 2 <= max_members <= 100_000:
+        raise RecordError("max_members must be integer between 2 and 100000")
+    if type(max_metadata_bytes) is not int or not 1 <= max_metadata_bytes <= max_total_bytes:
+        raise RecordError("max_metadata_bytes must be positive and <= max_total_bytes")
     archive_path = Path(path)
     try:
         with archive_path.open("rb") as source:
@@ -49,7 +56,13 @@ def verify_audit_package(path: str | Path, expected_package_sha256: str,
             raise RecordError("audit ZIP fingerprint mismatch")
         with ZipFile(archive_path) as archive:
             members = archive.infolist()
+            if len(members) > max_members:
+                raise RecordError("ZIP member count exceeds limit")
             names = [m.filename for m in members]
+            if any(not n or "\\\\" in n or "\\x00" in n or any(ord(ch) < 32 or ord(ch) == 127 for ch in n) or any(not p or p in (".", "..") for p in n.split("/")) or n.startswith("/") or ":" in n.split("/")[0] for n in names):
+                raise RecordError("ZIP contains unsafe or noncanonical member name")
+            if any(m.create_system == 3 and stat.S_IFMT(m.external_attr >> 16) not in (0, stat.S_IFREG) for m in members):
+                raise RecordError("ZIP contains nonregular Unix member")
             if len(names) != len(set(names)):
                 raise RecordError("duplicate ZIP member names")
             if names != sorted(names):
@@ -62,6 +75,8 @@ def verify_audit_package(path: str | Path, expected_package_sha256: str,
                 raise RecordError("ZIP uncompressed size exceeds limit")
             if "dossier.json" not in names or "index.json" not in names:
                 raise RecordError("ZIP missing dossier or index")
+            if archive.getinfo("dossier.json").file_size > max_metadata_bytes or archive.getinfo("index.json").file_size > max_metadata_bytes:
+                raise RecordError("ZIP JSON metadata exceeds limit")
             dossier = _load_json(archive.read("dossier.json"), "dossier")
             index = _load_json(archive.read("index.json"), "index")
             if dossier.get("report_version") != "1.0" or dossier.get("report_sha256") != sha256_data({
@@ -75,7 +90,9 @@ def verify_audit_package(path: str | Path, expected_package_sha256: str,
                 raise RecordError("missing evidence inventory")
             if index.get("artifact_count") != len(artifacts) or len(artifacts) != len(evidence):
                 raise RecordError("artifact count mismatch")
-            declared = {x["evidence_id"]: x for x in evidence if isinstance(x, dict) and "evidence_id" in x}
+            if any(not isinstance(x, dict) or not isinstance(x.get("evidence_id"), str) or not x["evidence_id"].strip() for x in evidence):
+                raise RecordError("dossier evidence IDs must be nonempty strings")
+            declared = {x["evidence_id"]: x for x in evidence}
             if len(declared) != len(evidence):
                 raise RecordError("duplicate or invalid dossier evidence IDs")
             paths = set()
