@@ -65,6 +65,7 @@ def verify_registry_lifecycle(snapshots: list[dict[str, Any]],
     previous = "0" * 64
     registries = {}
     key_origins = {}
+    revoked_ids = set()
     for number, snapshot in enumerate(snapshots, 1):
         registry = _snapshot(snapshot, previous, number)
         registries[number] = registry
@@ -73,6 +74,10 @@ def verify_registry_lifecycle(snapshots: list[dict[str, Any]],
             binding = (key["custodian_id"], key.get("public_key_b64"))
             if kid in key_origins and key_origins[kid] != binding:
                 raise RecordError("key ID cannot be reassigned or rotated in place")
+            if kid in revoked_ids and not key["revoked"]:
+                raise RecordError("revoked key IDs cannot be reactivated")
+            if key["revoked"]:
+                revoked_ids.add(kid)
             key_origins[kid] = binding
         previous = snapshot["snapshot_sha256"]
     if not isinstance(pinned_head_sha256, str) or pinned_head_sha256 != previous:
@@ -91,6 +96,11 @@ def verify_registry_lifecycle(snapshots: list[dict[str, Any]],
         assignment_map[seq] = rev
     if set(assignment_map) != set(range(1, len(events) + 1)):
         raise RecordError("registry assignments must cover all custody events")
+    if any(not isinstance(s, dict) or type(s.get("sequence")) is not int for s in signatures):
+        raise RecordError("signature entries require integer sequence")
+    signed_sequences = [s["sequence"] for s in signatures]
+    if len(signed_sequences) != len(set(signed_sequences)) or any(s < 1 or s > len(events) for s in signed_sequences):
+        raise RecordError("duplicate or unknown signature sequence")
     # Reuse the Phase 17 validator once per event under its assigned registry.
     # Each prefix is a valid chain and its final event must have a valid
     # signature under the assigned revision. Earlier events may have been
