@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "synthetic-bio-001",
+  "protocol_version": "pilot-1",
+  "software_version": "0.1.0",
+  "claims": [
+    {
+      "claim_id": "claim-synthetic-1",
+      "statement": "Synthetic assay controls meet the illustrative protocol criterion.",
+      "protocol_id": "synthetic-control-check-v1",
+      "status": "unverified",
+      "evidence_ids": ["ev-01", "ev-02"]
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "ev-01",
+      "claim_id": "claim-synthetic-1",
+      "source_uri": "urn:example:synthetic-assay-run-a",
+      "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "method": "illustrative synthetic assay control",
+      "observed_at": "2026-11-03T00:00:00Z",
+      "verdict": "pass",
+      "operator_id": "demo-operator",
+      "independent_of": [],
+      "notes": "Synthetic data, not a real experiment; digest is illustrative, not independently checked."
+    },
+    {
+      "evidence_id": "ev-02",
+      "claim_id": "claim-synthetic-1",
+      "source_uri": "urn:example:synthetic-assay-run-b",
+      "artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "method": "illustrative secondary synthetic check",
+      "observed_at": "2026-11-03T00:00:00Z",
+      "verdict": "pass",
+      "operator_id": "demo-operator",
+      "independent_of": [],
+      "notes": "Same operator: not independent replication."
+    }
+  ]
+}
