@@ -39,11 +39,14 @@ def export_verified_audit_package(
     artifact_paths: dict[str, str],
     destination: str | Path,
     max_file_bytes: int = 100_000_000,
+    max_total_bytes: int = 500_000_000,
 ) -> dict[str, Any]:
     """Verify source bytes and write a deterministic, integrity-indexed ZIP.
 
     This is a local export operation. Do not concurrently modify source files.
     """
+    if type(max_total_bytes) is not int or max_total_bytes < 1:
+        raise RecordError("max_total_bytes must be positive integer")
     if not isinstance(dossier, dict) or dossier.get("report_version") != "1.0":
         raise RecordError("dossier must be a version 1.0 report")
     if dossier.get("report_sha256") != sha256_data({
@@ -71,6 +74,7 @@ def export_verified_audit_package(
     if set(artifact_paths) != expected_ids:
         raise RecordError("artifact_paths must map exactly every source evidence ID")
     content = {}
+    total_bytes = 0
     manifest = []
     used_paths = set()
     for item in sorted(inventory, key=lambda x: x["evidence_id"]):
@@ -97,6 +101,9 @@ def export_verified_audit_package(
         data = resolved.read_bytes()
         if len(data) > max_file_bytes or hashlib.sha256(data).hexdigest() != item["sha256"]:
             raise RecordError("source artifact bytes do not match declared SHA-256")
+        total_bytes += len(data)
+        if total_bytes > max_total_bytes:
+            raise RecordError("source evidence aggregate size exceeds limit")
         content[rel] = data
         manifest.append({"evidence_id": eid, "path": f"artifacts/{rel}",
                          "role": item["role"], "sha256": item["sha256"],
@@ -117,10 +124,19 @@ def export_verified_audit_package(
     entries = {"dossier.json": canonical_bytes(dossier),
                "index.json": canonical_bytes(index)}
     entries.update({f"artifacts/{name}": data for name, data in content.items()})
+    if sum(len(data) for data in entries.values()) > max_total_bytes:
+        raise RecordError("audit package uncompressed content exceeds aggregate limit")
     with ZipFile(destination, "x", compression=ZIP_STORED) as archive:
         for name, data in sorted(entries.items()):
             info = ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
             info.compress_type = ZIP_STORED
             info.external_attr = 0o100644 << 16
             archive.writestr(info, data)
-    return {**index, "package_sha256": hashlib.sha256(destination.read_bytes()).hexdigest()}
+    digest = hashlib.sha256()
+    with destination.open("rb") as stream:
+        while True:
+            chunk = stream.read(1024 * 1024)
+            if not chunk:
+                break
+            digest.update(chunk)
+    return {**index, "package_sha256": digest.hexdigest()}
