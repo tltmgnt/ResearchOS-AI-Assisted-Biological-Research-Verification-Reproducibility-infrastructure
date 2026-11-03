@@ -319,6 +319,16 @@ python -m researchos_bio monitoring-snapshot snapshot.json --output monitoring-r
 
 See [Deployment Operations](docs/DEPLOYMENT_OPERATIONS.md). These commands do **not** deploy software, collect telemetry, authenticate approvals or authorize production release.
 
+## Phase 23: independent pilot documentary validation
+
+The `validate-independent-pilot` command links the fingerprinted evaluation dossier, audit ZIP verification, auditor acceptance and pilot evidence manifest. It requires nonplaceholder evidence references and explicit independence/sign-off declarations while preserving flags that actual external execution and identity have **not** been verified.
+
+```sh
+python -m researchos_bio validate-independent-pilot dossier.json package-verification.json acceptance-report.json pilot-evidence.json --output pilot-validation.json
+```
+
+See [Independent Pilot Validation](docs/INDEPENDENT_PILOT_VALIDATION.md). This is a documentary consistency check, **not** evidence that an external pilot or independent scientific replication has occurred.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
