@@ -13,6 +13,7 @@ from .benchmarks import evaluate_benchmark
 from .assurance import assemble_assurance
 from .pilot import assess_pilot
 from .external_audit import verify_external_audit
+from .pilot_comparison import evaluate_pilot_comparison
 
 
 def _read_json(path: str) -> dict:
@@ -80,6 +81,10 @@ def main(argv: list[str] | None = None) -> int:
     external.add_argument("audit_bundle")
     external.add_argument("--minimum-organizations", type=int, default=2)
     external.add_argument("--output", help="write JSON external audit report")
+    compare = sub.add_parser("compare-pilot", help="describe paired audit reconstruction times")
+    compare.add_argument("plan")
+    compare.add_argument("observations")
+    compare.add_argument("--output", help="write JSON paired comparison report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record) if hasattr(args, "record") else None
@@ -90,6 +95,14 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "compare-pilot":
+            result = evaluate_pilot_comparison(_read_json(args.plan), _read_json(args.observations))
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["minimum_sample_size_met"] else 2
         elif args.command == "verify-external-audit":
             result = verify_external_audit(
                 _read_json(args.pilot_report), _read_json(args.audit_trust_registry),
