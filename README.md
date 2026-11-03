@@ -191,6 +191,16 @@ python -m researchos_bio assess-pilot assurance-packets.json pilot-policy.json -
 
 See [the external pilot evaluation protocol](docs/PILOT_EVALUATION.md) for preregistration, negative controls, audit handoff, metrics, and acceptance gates. **Pilot software readiness is not independent biological replication, scientific validity, or external endorsement.**
 
+## Phase 10: signed external evaluation handoff
+
+The `verify-external-audit` command checks Ed25519-signed evaluator decisions bound to an exact Phase 9 pilot report. Administrative acceptance requires a passing pilot gate, valid approved signatures from at least two distinct organizations, and no negative signed decisions. Revoked keys, modified signatures, and identity mismatches cannot satisfy the quorum.
+
+```sh
+python -m researchos_bio verify-external-audit pilot-report.json audit-trust-registry.json audit-bundle.json --minimum-organizations 2 --output external-audit-report.json
+```
+
+See [External Audit Handoff](docs/EXTERNAL_AUDIT.md) for signing payloads, schemas and evaluator procedures. **Key-based authentication does not independently prove evaluator identity, scientific reproduction or biological validity.** All claims of scientific validation remain false.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
