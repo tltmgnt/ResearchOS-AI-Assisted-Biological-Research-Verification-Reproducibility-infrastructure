@@ -8,6 +8,7 @@ from .core import RecordError, evaluate_record, verify_report
 from .artifacts import verify_artifacts
 from .reviews import evaluate_reviews, verify_review_report
 from .attestations import verify_attestations
+from .assurance import assess_assurance
 
 
 def _read_json(path: str) -> dict:
@@ -42,10 +43,30 @@ def main(argv: list[str] | None = None) -> int:
     att.add_argument("trust_registry")
     att.add_argument("attestations")
     att.add_argument("--output", help="write JSON signature verification report")
+    assurance = sub.add_parser("assess", help="evaluate conservative cross-layer assurance gates")
+    assurance.add_argument("record")
+    assurance.add_argument("manifest")
+    assurance.add_argument("bundle")
+    assurance.add_argument("trust_registry")
+    assurance.add_argument("attestations")
+    assurance.add_argument("--root", required=True, help="local evidence artifact root")
+    assurance.add_argument("--output", help="write deterministic advisory assurance report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record)
-        if args.command == "evaluate":
+        if args.command == "assess":
+            result = assess_assurance(record, _read_json(args.manifest), args.root,
+                                      _read_json(args.bundle), _read_json(args.trust_registry),
+                                      _read_json(args.attestations))
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["claims"] and all(
+                x["advisory_gate"] == "ready_for_manual_adjudication" for x in result["claims"]
+            ) else 2
+        elif args.command == "evaluate":
             result = evaluate_record(record)
             output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
             if args.output:
