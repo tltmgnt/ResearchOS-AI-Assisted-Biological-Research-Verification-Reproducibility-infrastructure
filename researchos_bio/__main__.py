@@ -38,7 +38,7 @@ def main(argv: list[str] | None = None) -> int:
                 print(output, end="")
         elif args.command == "verify-artifacts":
             result = verify_artifacts(record, _read_json(args.manifest), args.root)
-            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\\n"
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
             if args.output:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
