@@ -22,6 +22,7 @@ from .signed_custody import verify_signed_custody
 from .registry_lifecycle import verify_registry_lifecycle
 from .trust_anchor import verify_published_anchor
 from .auditor_acceptance import evaluate_auditor_acceptance
+from .operations import evaluate_deployment_readiness, evaluate_monitoring_snapshot
 
 
 def _read_json(path: str) -> dict:
@@ -154,6 +155,13 @@ def main(argv: list[str] | None = None) -> int:
     acceptance.add_argument("suite")
     acceptance.add_argument("fixture_root")
     acceptance.add_argument("--output", help="write JSON acceptance report")
+    preflight = sub.add_parser("deployment-preflight", help="read-only deployment readiness checks")
+    preflight.add_argument("config")
+    preflight.add_argument("artifact_root")
+    preflight.add_argument("--output", help="write JSON preflight report")
+    monitoring = sub.add_parser("monitoring-snapshot", help="evaluate supplied operational metrics")
+    monitoring.add_argument("snapshot")
+    monitoring.add_argument("--output", help="write JSON alert report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record) if hasattr(args, "record") else None
@@ -164,6 +172,22 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "deployment-preflight":
+            result = evaluate_deployment_readiness(_read_json(args.config), args.artifact_root)
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["operational_preflight_passed"] else 2
+        elif args.command == "monitoring-snapshot":
+            result = evaluate_monitoring_snapshot(_read_json(args.snapshot))
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 2 if result["critical_alert"] else 0
         elif args.command == "auditor-acceptance":
             result = evaluate_auditor_acceptance(
                 _read_json(args.suite), args.fixture_root)
