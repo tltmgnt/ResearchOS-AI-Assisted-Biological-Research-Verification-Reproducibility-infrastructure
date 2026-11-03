@@ -329,6 +329,16 @@ python -m researchos_bio validate-independent-pilot dossier.json package-verific
 
 See [Independent Pilot Validation](docs/INDEPENDENT_PILOT_VALIDATION.md). This is a documentary consistency check, **not** evidence that an external pilot or independent scientific replication has occurred.
 
+## Phase 24: release candidate and operational handoff
+
+The `release-handoff` command links the Phase 21 auditor acceptance, Phase 22 deployment preflight and Phase 23 pilot validation reports to a versioned `1.0.0-rc1` candidate manifest. It requires documentary references for independent security review, auditor sign-off, external pilot execution, trust-anchor publication and operations approval.
+
+```sh
+python -m researchos_bio release-handoff release-manifest.json auditor-acceptance.json deployment-preflight.json pilot-validation.json --output release-handoff-report.json
+```
+
+See [Release Handoff](docs/RELEASE_HANDOFF.md) for integration steps, external evidence obligations and production blockers. **This does not publish a release, merge stacked PRs into main, authorize production or certify scientific replication.** The installed package version remains `0.1.0` until a separately authorized release.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
