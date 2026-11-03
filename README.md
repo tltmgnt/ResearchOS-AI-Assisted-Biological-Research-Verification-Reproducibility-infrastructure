@@ -167,6 +167,20 @@ An `assurance_packet_complete` flag is set only if the underlying artifacts matc
 
 **This is not a scientific validation or certification engine.** The report always states `scientific_validation_performed: false`, `independent_replication_verified: false`, and `scientific_claim_validated: false`. External identity, provenance, preregistration timing, independent experimental execution and domain expert scientific audits remain necessary.
 
+## Phase 8: executable end-to-end synthetic demonstration
+
+Run a full synthetic ResearchOS case with **real file hashing, ephemeral Ed25519 signatures, two administrative reviewer organizations, benchmark comparison, and unified assurance assembly**:
+
+```sh
+python -m pip install -e .
+python examples/end_to_end_demo.py
+python -m unittest discover -s tests -v
+```
+
+The demo creates temporary synthetic artifact files and private keys, then discards them on exit. It prints a complete administrative packet and two negative-control packets: one with a revoked signing key, another with a modified artifact. Additional integration tests cover a failed numerical benchmark, missing signatures, a reviewer challenge and deterministic replay. CI runs the demo in addition to the full unit test suite.
+
+The example is entirely fictional: reviewer IDs, organizations, protocols, measurements, and signing keys are synthetic. The successful case demonstrates **software pipeline integration only**, not independent scientific reproduction or real-world identity assurance. A green demo is not a validation of biological claims.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
