@@ -18,6 +18,7 @@ from .pilot_statistics import evaluate_pilot_statistics
 from .evaluation_dossier import assemble_evaluation_dossier
 from .audit_export import export_verified_audit_package
 from .audit_verify import verify_audit_package, append_custody_event
+from .signed_custody import verify_signed_custody
 
 
 def _read_json(path: str) -> dict:
@@ -117,6 +118,13 @@ def main(argv: list[str] | None = None) -> int:
     custody.add_argument("event", help="JSON event declaration")
     custody.add_argument("package_sha256")
     custody.add_argument("--output", required=True, help="write new JSON custody event array")
+    signed = sub.add_parser("verify-signed-custody", help="verify Ed25519 custody signatures and chain anchor")
+    signed.add_argument("events")
+    signed.add_argument("signatures")
+    signed.add_argument("registry")
+    signed.add_argument("package_sha256")
+    signed.add_argument("anchor")
+    signed.add_argument("--output", help="write JSON signature verification report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record) if hasattr(args, "record") else None
@@ -127,6 +135,17 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "verify-signed-custody":
+            result = verify_signed_custody(
+                _read_json(args.events), _read_json(args.signatures),
+                _read_json(args.registry), args.package_sha256,
+                _read_json(args.anchor))
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["all_events_cryptographically_signed"] else 2
         elif args.command == "verify-audit-package":
             result = verify_audit_package(args.package, args.expected_sha256,
                                           max_total_bytes=args.max_total_bytes)

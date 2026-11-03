@@ -258,6 +258,16 @@ python -m researchos_bio append-custody-event events.json event.json EXPECTED_SH
 
 See [Audit Package Verification and Custody](docs/AUDIT_PACKAGE_VERIFICATION.md). Custody entries are **unsigned declarations**, not proof of real-world identity, trusted timestamps or biological validity.
 
+## Phase 17: Ed25519 custody signatures and pinned chain checkpoints
+
+The `verify-signed-custody` command verifies a complete Phase 16 custody hash chain, Ed25519 signatures from enrolled and approved custodian keys, and a supplied external checkpoint hash. It rejects mismatched anchors and reports missing, revoked or invalid signatures without claiming real-world identity verification.
+
+```sh
+python -m researchos_bio verify-signed-custody events.json signatures.json registry.json PACKAGE_SHA256 anchor.json --output custody-verification.json
+```
+
+See [Signed Custody and Trust Anchoring](docs/SIGNED_CUSTODY.md). The registry and checkpoint require **independent authentication** outside ResearchOS; possession of a private key is not proof of physical custody or scientific validity.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
