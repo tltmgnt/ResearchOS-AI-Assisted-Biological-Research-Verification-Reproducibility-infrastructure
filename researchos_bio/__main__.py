@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import sys
 from .core import RecordError, evaluate_record, verify_report
+from .artifacts import verify_artifacts
 
 
 def _read_json(path: str) -> dict:
@@ -20,6 +21,11 @@ def main(argv: list[str] | None = None) -> int:
     verify = sub.add_parser("verify", help="recompute and verify an evaluation report")
     verify.add_argument("record")
     verify.add_argument("report")
+    art = sub.add_parser("verify-artifacts", help="verify local evidence files against SHA-256 manifest")
+    art.add_argument("record")
+    art.add_argument("manifest")
+    art.add_argument("--root", required=True, help="directory containing local artifacts")
+    art.add_argument("--output", help="write JSON integrity report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record)
@@ -30,6 +36,14 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "verify-artifacts":
+            result = verify_artifacts(record, _read_json(args.manifest), args.root)
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["all_artifacts_verified"] else 2
         else:
             report = _read_json(args.report)
             if not verify_report(record, report):
