@@ -207,6 +207,16 @@ The release-candidate workflow builds wheel and source distributions, installs t
 
 See [Release Candidate Operational Readiness](docs/RELEASE_CANDIDATE.md) for exact-commit CI gates, dependency and key management controls, negative controls, and external audit requirements. This is **software release preparation**, not scientific certification or production approval.
 
+## Phase 12: paired pilot performance evaluation
+
+The `compare-pilot` command computes **descriptive** paired audit-reconstruction timing metrics from a hash-bound plan and matched observations. It reports sample-size completion, total baseline and ResearchOS minutes, observed fractional time reduction, and median paired time difference.
+
+```sh
+python -m researchos_bio compare-pilot plan.json observations.json --output comparison.json
+```
+
+See [Paired Pilot Evaluation Protocol](docs/PAIRED_PILOT.md) for preregistration, case pairing, external evaluator controls, order effects and required raw evidence. The sample plan in `examples/synthetic_pilot_plan.json` is illustrative only. No independent real-world performance improvement, causal effect or biological replication is established.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
