@@ -119,7 +119,7 @@ def verify_attestations(
         "review_bundle_sha256": sha256_data(review_bundle),
         "trust_registry_sha256": sha256_data(trust_registry),
         "attestations_sha256": sha256_data(attestations),
-        "all_reviews_signed": all(x["cryptographically_attested"] for x in results),
+        "all_reviews_signed": bool(results) and all(x["cryptographically_attested"] for x in results),
         "reviews": results,
         "disclaimer": "Signature validity is not evidence of biological truth, external identity verification or independent replication.",
     }
