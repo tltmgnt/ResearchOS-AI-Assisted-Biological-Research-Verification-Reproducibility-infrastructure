@@ -8,6 +8,7 @@ from .core import RecordError, evaluate_record, verify_report
 from .artifacts import verify_artifacts
 from .reviews import evaluate_reviews, verify_review_report
 from .attestations import verify_attestations
+from .governance import evaluate_governance
 
 
 def _read_json(path: str) -> dict:
@@ -42,11 +43,27 @@ def main(argv: list[str] | None = None) -> int:
     att.add_argument("trust_registry")
     att.add_argument("attestations")
     att.add_argument("--output", help="write JSON signature verification report")
+    gov = sub.add_parser("evaluate-governance", help="evaluate enrolled signed-review quorum")
+    gov.add_argument("record")
+    gov.add_argument("bundle")
+    gov.add_argument("trust_registry")
+    gov.add_argument("attestations")
+    gov.add_argument("policy")
+    gov.add_argument("--output", help="write JSON governance report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record)
         if args.command == "evaluate":
             result = evaluate_record(record)
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+        elif args.command == "evaluate-governance":
+            result = evaluate_governance(record, _read_json(args.bundle),
+                                         _read_json(args.trust_registry),
+                                         _read_json(args.attestations), _read_json(args.policy))
             output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
             if args.output:
                 Path(args.output).write_text(output, encoding="utf-8")

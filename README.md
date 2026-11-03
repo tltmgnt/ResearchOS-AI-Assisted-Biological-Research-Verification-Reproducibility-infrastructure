@@ -83,6 +83,31 @@ A signer signs the output of `attestation_payload(record, review)` from `researc
 
 **Trust boundary:** the registry must be authenticated and distributed out-of-band. Signature verification proves possession of a corresponding private key, **not** real-world reviewer identity, absence of collusion, experimental reproducibility, or biological validity. Key rotation, revocation, certificate chains and independent identity proofing are not yet implemented.
 
+## Phase 5: reviewer enrollment, key revocation and administrative review quorum
+
+`evaluate-governance` combines the signed review verification of Phase 4 with an **operator-maintained** enrollment/revocation policy. A claim is marked `administrative_review_ready` only when at least two distinct approved organizations have qualifying, cryptographically signed confirmations and there are no unresolved challenges.
+
+```sh
+python -m researchos_bio evaluate-governance record.json review-bundle.json trusted-keys.json signatures.json policy.json --output governance-report.json
+```
+
+The operator-controlled policy format is:
+
+```json
+{
+  "schema_version": "1.0",
+  "minimum_distinct_organizations": 2,
+  "revoked_key_ids": ["revoked-key-id"],
+  "enrolled_reviewers": [
+    {"reviewer_id": "reviewer-1", "organization_id": "lab-1", "approved": true}
+  ]
+}
+```
+
+A revoked key or unapproved reviewer does not contribute to quorum. Duplicate enrollments and revocation entries are rejected. Distinct organizations count once, regardless of the number of reviewers or signatures. All challenges block readiness. Reports bind to the input policy and records by SHA-256.
+
+**Critical limitations:** enrollment is an operator assertion, not an independently checked identity credential; the revocation list is not time-stamped or externally distributed; colluding organizations may still claim independence. Administrative readiness **never** means independent replication verified or biological claim validated. Trust-registry and policy authenticity, governance authorization, reviewer vetting, independent experimental reproduction and clinical/biological assessment require external controls.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
