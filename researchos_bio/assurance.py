@@ -28,7 +28,11 @@ def assess_assurance(
     ``ready_for_manual_adjudication`` is not permission to accept a claim.
     All metadata and reviewer independence declarations may be inaccurate.
     """
-    claims, _ = validate_record(record)
+    claims, evidence = validate_record(record)
+    if not isinstance(manifest, dict):
+        raise RecordError("assurance manifest must be an object")
+    operators_by_claim = {claim.claim_id: {ev.operator_id for ev in evidence if ev.claim_id == claim.claim_id}
+                          for claim in claims}
     protocol_ids = {claim.protocol_id for claim in claims}
     if len(protocol_ids) != 1 or manifest.get("protocol_id") not in protocol_ids:
         raise RecordError("assurance manifest protocol_id must match the single claim protocol")
@@ -55,9 +59,14 @@ def assess_assurance(
         )
         claim_reviews = review_by_claim[claim_id]
         challenges = sorted(x["review_id"] for x in claim_reviews if x["decision"] == "challenge")
+        shared_operator_reviews = sorted(
+            x["review_id"] for x in claim_reviews
+            if x["reviewer_id"] in operators_by_claim[claim_id]
+        )
         signed_eligible = sorted(
             x["review_id"] for x in claim_reviews
-            if x["self_declared_eligible"] and signed.get(x["review_id"], False)
+            if (x["self_declared_eligible"] and signed.get(x["review_id"], False)
+                and x["reviewer_id"] not in operators_by_claim[claim_id])
         )
         all_claim_reviews_signed = bool(claim_reviews) and all(
             signed.get(x["review_id"], False) for x in claim_reviews
@@ -81,6 +90,7 @@ def assess_assurance(
             "all_claim_artifacts_match": supporting_artifacts_match,
             "signed_self_declared_eligible_review_ids": signed_eligible,
             "challenge_review_ids": challenges,
+            "shared_operator_review_ids": shared_operator_reviews,
             "all_claim_reviews_signed": all_claim_reviews_signed,
             "independence_verified": False,
             "biological_validity_verified": False,
