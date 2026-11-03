@@ -20,6 +20,7 @@ from .audit_export import export_verified_audit_package
 from .audit_verify import verify_audit_package, append_custody_event
 from .signed_custody import verify_signed_custody
 from .registry_lifecycle import verify_registry_lifecycle
+from .trust_anchor import verify_published_anchor
 
 
 def _read_json(path: str) -> dict:
@@ -135,6 +136,16 @@ def main(argv: list[str] | None = None) -> int:
     lifecycle.add_argument("assignments")
     lifecycle.add_argument("pinned_registry_head_sha256")
     lifecycle.add_argument("--output", help="write JSON registry lifecycle report")
+    published = sub.add_parser("verify-published-anchor", help="verify multi-publisher checkpoint attestations")
+    published.add_argument("checkpoint")
+    published.add_argument("attestations")
+    published.add_argument("publisher_registry")
+    published.add_argument("pinned_publisher_registry_sha256")
+    published.add_argument("expected_package_sha256")
+    published.add_argument("expected_custody_head_sha256")
+    published.add_argument("expected_registry_head_sha256")
+    published.add_argument("--minimum-publishers", type=int, default=2)
+    published.add_argument("--output", help="write JSON verification report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record) if hasattr(args, "record") else None
@@ -145,6 +156,18 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "verify-published-anchor":
+            result = verify_published_anchor(
+                _read_json(args.checkpoint), _read_json(args.attestations),
+                _read_json(args.publisher_registry), args.pinned_publisher_registry_sha256,
+                args.expected_package_sha256, args.expected_custody_head_sha256,
+                args.expected_registry_head_sha256, args.minimum_publishers)
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["cryptographic_publisher_quorum_met"] else 2
         elif args.command == "verify-registry-lifecycle":
             result = verify_registry_lifecycle(
                 _read_json(args.snapshots), _read_json(args.events),
