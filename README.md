@@ -217,6 +217,16 @@ python -m researchos_bio compare-pilot plan.json observations.json --output comp
 
 See [Paired Pilot Evaluation Protocol](docs/PAIRED_PILOT.md) for preregistration, case pairing, external evaluator controls, order effects and required raw evidence. The sample plan in `examples/synthetic_pilot_plan.json` is illustrative only. No independent real-world performance improvement, causal effect or biological replication is established.
 
+## Phase 13: pilot case accounting and descriptive uncertainty
+
+The `pilot-statistics` command reconciles a complete case accounting frame against paired observations. It reports missing and excluded cases with reasons, sample completion, mean paired time difference, sample standard deviation, and an illustrative normal-approximation interval.
+
+```sh
+python -m researchos_bio pilot-statistics plan.json observations.json accounting.json --output statistics.json
+```
+
+See [Pilot Statistics and Missing-Data Protocol](docs/PILOT_STATISTICS.md). Intervals are descriptive approximations, **not** confirmatory inference or proof of causal effects, independent evaluator identity, or biological reproducibility.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
