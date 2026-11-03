@@ -59,11 +59,30 @@ python -m researchos_bio verify-artifacts record.json manifest.json --root ./loc
 
 Exit status 0 indicates all artifact hashes match; status 2 indicates missing or mismatched files; status 1 indicates invalid inputs or I/O errors. Paths must be relative to the declared artifact root; traversal and symlinks are rejected. This is an **integrity check**, not proof of independent replication or scientific correctness. A file may be correctly hashed yet scientifically invalid.
 
+## Phase 3: independent reviewer declarations and challenge tracking
+
+The review subsystem binds a versioned review bundle to the **exact source record SHA-256**, checks referenced claim/evidence IDs and protocol IDs, records reviewer/organization identifiers, declared independence, raw-data access, protocol adherence, conflicts of interest, and review outcomes (`confirm`, `challenge`, `inconclusive`).
+
+```sh
+python -m researchos_bio review record.json review-bundle.json --output review-report.json
+python -m researchos_bio verify-review record.json review-bundle.json review-report.json
+```
+
+Review bundle schema: `{"schema_version":"1.0","record_sha256":"<canonical record SHA-256>","reviews":[...]}`. Each review requires `review_id`, `claim_id`, `reviewer_id`, `organization_id`, `reviewed_at` (timezone-aware ISO-8601), `decision`, `reproduction_method`, `protocol_id`, a nonempty `evidence_ids` array, `independent_of_original_team` (boolean), `raw_data_available` (boolean), `protocol_followed` (boolean), and `conflicts_of_interest` (string array). `notes` is optional.
+
+To calculate the canonical record fingerprint:
+
+```sh
+python -c "import json; from researchos_bio.core import sha256_data; print(sha256_data(json.load(open('record.json'))))"
+```
+
+**Critical boundary:** reviewer IDs and independence are *self-declarations*, not authenticated identities or verified independent replication. Review bundles are not cryptographically signed. Even an eligible confirming declaration never promotes a claim to reproduced/validated status. Challenges trigger adjudication. An external identity, methodology, data, and reproduction audit remains necessary.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
 2. Protocol, environment, toolchain, random seed and dataset manifests.
-3. Signed reviewer attestations and evidence independence audit workflow.
+3. Add cryptographically signed reviewer attestations and independent identity/method audit (declaration workflow now implemented).
 4. Preregistered statistical/biological assay validation adapters and ground-truth benchmarks.
 5. Matched evaluation against manual and unstructured AI-assisted research workflows.
 
