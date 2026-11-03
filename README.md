@@ -308,6 +308,17 @@ python -m researchos_bio auditor-acceptance suite.json ./fixtures --output accep
 
 See [Auditor Acceptance Protocol](docs/AUDITOR_ACCEPTANCE.md). Passing this suite **does not mean an independent auditor has executed or approved it**; real external sign-off and authentic registry/checkpoint evidence remain required.
 
+## Phase 22: deployment preflight and operational monitoring
+
+Use `deployment-preflight` to validate local release configuration, registry pin declarations and artifact directory availability. Use `monitoring-snapshot` to evaluate externally supplied verification failures, rejected archives, unexpected restarts and stale success metrics.
+
+```sh
+python -m researchos_bio deployment-preflight deployment.json ./artifacts --output preflight-report.json
+python -m researchos_bio monitoring-snapshot snapshot.json --output monitoring-report.json
+```
+
+See [Deployment Operations](docs/DEPLOYMENT_OPERATIONS.md). These commands do **not** deploy software, collect telemetry, authenticate approvals or authorize production release.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
