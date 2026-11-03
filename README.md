@@ -227,6 +227,16 @@ python -m researchos_bio pilot-statistics plan.json observations.json accounting
 
 See [Pilot Statistics and Missing-Data Protocol](docs/PILOT_STATISTICS.md). Intervals are descriptive approximations, **not** confirmatory inference or proof of causal effects, independent evaluator identity, or biological reproducibility.
 
+## Phase 14: external evaluation dossier and evidence traceability
+
+The `assemble-evaluation-dossier` command binds pilot readiness, paired comparison, missing-data statistics and signed external audit reports into a single integrity-checked dossier with a source-evidence digest inventory. It reconciles case counts and reports a strict administrative completeness gate.
+
+```sh
+python -m researchos_bio assemble-evaluation-dossier pilot-report.json comparison-report.json statistics-report.json audit-report.json source-evidence.json --output dossier.json
+```
+
+See [Evaluation Dossier and Evidence Traceability](docs/EVALUATION_DOSSIER.md) for inputs, validation gates and external evaluator checks. The software checks **declared** source hashes, not original source artifact bytes or biological validity.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
