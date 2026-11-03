@@ -268,6 +268,16 @@ python -m researchos_bio verify-signed-custody events.json signatures.json regis
 
 See [Signed Custody and Trust Anchoring](docs/SIGNED_CUSTODY.md). The registry and checkpoint require **independent authentication** outside ResearchOS; possession of a private key is not proof of physical custody or scientific validity.
 
+## Phase 18: historical trust registry and key revocation
+
+The `verify-registry-lifecycle` command checks hash-linked custody trust-registry revisions, key ID rotation rules, permanent revocation within the supplied history, and per-event Ed25519 signatures against explicitly assigned historical key policy. The registry chain head must match a supplied independent checkpoint.
+
+```sh
+python -m researchos_bio verify-registry-lifecycle snapshots.json events.json signatures.json PACKAGE_SHA256 custody-anchor.json assignments.json PINNED_REGISTRY_HEAD_SHA256 --output lifecycle-report.json
+```
+
+See [Trust Registry Lifecycle](docs/REGISTRY_LIFECYCLE.md). The supplied snapshots, assignments, timestamps and checkpoint require **external authentication**; the software cannot prove contemporaneous enrollment or physical custody.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).

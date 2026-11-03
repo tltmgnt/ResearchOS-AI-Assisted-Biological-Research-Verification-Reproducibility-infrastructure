@@ -19,6 +19,7 @@ from .evaluation_dossier import assemble_evaluation_dossier
 from .audit_export import export_verified_audit_package
 from .audit_verify import verify_audit_package, append_custody_event
 from .signed_custody import verify_signed_custody
+from .registry_lifecycle import verify_registry_lifecycle
 
 
 def _read_json(path: str) -> dict:
@@ -125,6 +126,15 @@ def main(argv: list[str] | None = None) -> int:
     signed.add_argument("package_sha256")
     signed.add_argument("anchor")
     signed.add_argument("--output", help="write JSON signature verification report")
+    lifecycle = sub.add_parser("verify-registry-lifecycle", help="verify historical custody key policy and registry checkpoints")
+    lifecycle.add_argument("snapshots")
+    lifecycle.add_argument("events")
+    lifecycle.add_argument("signatures")
+    lifecycle.add_argument("package_sha256")
+    lifecycle.add_argument("custody_anchor")
+    lifecycle.add_argument("assignments")
+    lifecycle.add_argument("pinned_registry_head_sha256")
+    lifecycle.add_argument("--output", help="write JSON registry lifecycle report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record) if hasattr(args, "record") else None
@@ -135,6 +145,18 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "verify-registry-lifecycle":
+            result = verify_registry_lifecycle(
+                _read_json(args.snapshots), _read_json(args.events),
+                _read_json(args.signatures), args.package_sha256,
+                _read_json(args.custody_anchor), _read_json(args.assignments),
+                args.pinned_registry_head_sha256)
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["all_assigned_signatures_valid"] else 2
         elif args.command == "verify-signed-custody":
             result = verify_signed_custody(
                 _read_json(args.events), _read_json(args.signatures),
