@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "protocol_id": "synthetic-audit-timing-v1",
+  "registered_at": "2026-11-03T09:00:00Z",
+  "comparison_design": "paired",
+  "metric": "audit_reconstruction_minutes",
+  "minimum_pairs": 2
+}
