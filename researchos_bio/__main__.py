@@ -12,6 +12,7 @@ from .governance import evaluate_governance
 from .benchmarks import evaluate_benchmark
 from .assurance import assemble_assurance
 from .pilot import assess_pilot
+from .external_audit import verify_external_audit
 
 
 def _read_json(path: str) -> dict:
@@ -73,6 +74,12 @@ def main(argv: list[str] | None = None) -> int:
     pilot.add_argument("packets", help="JSON array of assurance reports")
     pilot.add_argument("policy", help="JSON pilot readiness policy")
     pilot.add_argument("--output", help="write JSON pilot report")
+    external = sub.add_parser("verify-external-audit", help="verify signed external evaluator decisions")
+    external.add_argument("pilot_report")
+    external.add_argument("audit_trust_registry")
+    external.add_argument("audit_bundle")
+    external.add_argument("--minimum-organizations", type=int, default=2)
+    external.add_argument("--output", help="write JSON external audit report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record)
@@ -83,6 +90,16 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "verify-external-audit":
+            result = verify_external_audit(
+                _read_json(args.pilot_report), _read_json(args.audit_trust_registry),
+                _read_json(args.audit_bundle), args.minimum_organizations)
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["administrative_external_audit_accepted"] else 2
         elif args.command == "assess-pilot":
             result = assess_pilot(_read_json(args.packets), _read_json(args.policy))
             output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
