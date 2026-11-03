@@ -9,6 +9,7 @@ from .artifacts import verify_artifacts
 from .reviews import evaluate_reviews, verify_review_report
 from .attestations import verify_attestations
 from .governance import evaluate_governance
+from .benchmarks import evaluate_benchmark
 
 
 def _read_json(path: str) -> dict:
@@ -50,6 +51,11 @@ def main(argv: list[str] | None = None) -> int:
     gov.add_argument("attestations")
     gov.add_argument("policy")
     gov.add_argument("--output", help="write JSON governance report")
+    benchmark = sub.add_parser("evaluate-benchmark", help="evaluate preregistered numeric comparisons")
+    benchmark.add_argument("record")
+    benchmark.add_argument("plan")
+    benchmark.add_argument("outcomes")
+    benchmark.add_argument("--output", help="write JSON benchmark report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record)
@@ -60,6 +66,14 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "evaluate-benchmark":
+            result = evaluate_benchmark(record, _read_json(args.plan), _read_json(args.outcomes))
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["all_reported_results_within_tolerance"] else 2
         elif args.command == "evaluate-governance":
             result = evaluate_governance(record, _read_json(args.bundle),
                                          _read_json(args.trust_registry),

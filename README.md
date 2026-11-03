@@ -108,6 +108,53 @@ A revoked key or unapproved reviewer does not contribute to quorum. Duplicate en
 
 **Critical limitations:** enrollment is an operator assertion, not an independently checked identity credential; the revocation list is not time-stamped or externally distributed; colluding organizations may still claim independence. Administrative readiness **never** means independent replication verified or biological claim validated. Trust-registry and policy authenticity, governance authorization, reviewer vetting, independent experimental reproduction and clinical/biological assessment require external controls.
 
+## Phase 6: preregistered numeric reproduction benchmarks
+
+The `evaluate-benchmark` command checks supplied numeric reproduction outcomes against a **frozen, hash-bound plan**. A plan specifies the claim, exact protocol ID, metric, unit, reference value, analysis method, absolute tolerance, and timezone-aware registration timestamp. Outcomes must reference the exact plan SHA-256 and a known evidence ID for each claim.
+
+```sh
+python -m researchos_bio evaluate-benchmark record.json benchmark-plan.json outcomes.json --output benchmark-report.json
+```
+
+Plan shape:
+
+```json
+{
+  "schema_version": "1.0",
+  "record_sha256": "<canonical source record SHA-256>",
+  "registered_at": "2026-11-03T09:00:00Z",
+  "comparisons": [{
+    "claim_id": "claim-synthetic-1",
+    "protocol_id": "synthetic-control-check-v1",
+    "metric": "synthetic_signal",
+    "unit": "arbitrary_units",
+    "analysis_method": "absolute_difference",
+    "reference_value": 100,
+    "absolute_tolerance": 5
+  }]
+}
+```
+
+Outcomes shape:
+
+```json
+{
+  "schema_version": "1.0",
+  "plan_sha256": "<canonical benchmark plan SHA-256>",
+  "results": [{
+    "claim_id": "claim-synthetic-1",
+    "run_id": "synthetic-run-1",
+    "operator_id": "demo-operator",
+    "organization_id": "demo-lab",
+    "artifact_evidence_id": "ev-01",
+    "observed_at": "2026-11-03T12:00:00Z",
+    "observed_value": 103
+  }]
+}
+```
+
+The acceptance rule is `abs(observed_value - reference_value) <= absolute_tolerance`, inclusive. Missing, duplicated, out-of-plan, invalid, or nonfinite values are handled explicitly. Exit code 0 means all planned numeric results fall within tolerance, 2 means missing or outside-tolerance results, and 1 means invalid input. **Do not interpret a within-tolerance result as verified biological replication.** Neither the registration timestamp nor source results are authenticated by this module; scientific protocols, independence, raw artifact integrity, statistical appropriateness, and preregistration timing require external audit.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
