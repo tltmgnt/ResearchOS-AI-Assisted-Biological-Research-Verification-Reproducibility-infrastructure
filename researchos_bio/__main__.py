@@ -110,10 +110,13 @@ def main(argv: list[str] | None = None) -> int:
     audit_export.add_argument("artifact_paths", help="JSON map of evidence IDs to relative source paths")
     audit_export.add_argument("destination", help="new ZIP file; existing files are not overwritten")
     audit_export.add_argument("--max-file-bytes", type=int, default=100000000)
+    audit_export.add_argument("--max-total-bytes", type=int, default=500000000)
     verify_zip = sub.add_parser("verify-audit-package", help="independently verify a portable audit ZIP")
     verify_zip.add_argument("package")
     verify_zip.add_argument("expected_sha256")
     verify_zip.add_argument("--max-total-bytes", type=int, default=500000000)
+    verify_zip.add_argument("--max-members", type=int, default=10000)
+    verify_zip.add_argument("--max-metadata-bytes", type=int, default=10000000)
     verify_zip.add_argument("--output", help="write JSON verification report")
     custody = sub.add_parser("append-custody-event", help="append a hash-linked custody declaration")
     custody.add_argument("events", help="existing JSON array of events")
@@ -193,7 +196,9 @@ def main(argv: list[str] | None = None) -> int:
             return 0 if result["all_events_cryptographically_signed"] else 2
         elif args.command == "verify-audit-package":
             result = verify_audit_package(args.package, args.expected_sha256,
-                                          max_total_bytes=args.max_total_bytes)
+                                          max_total_bytes=args.max_total_bytes,
+                                          max_members=args.max_members,
+                                          max_metadata_bytes=args.max_metadata_bytes)
             output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
             if args.output:
                 Path(args.output).write_text(output, encoding="utf-8")
@@ -210,7 +215,8 @@ def main(argv: list[str] | None = None) -> int:
             result = export_verified_audit_package(
                 _read_json(args.dossier), args.source_root,
                 _read_json(args.artifact_paths), args.destination,
-                max_file_bytes=args.max_file_bytes)
+                max_file_bytes=args.max_file_bytes,
+                max_total_bytes=args.max_total_bytes)
             print(json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False))
             return 0
         elif args.command == "assemble-evaluation-dossier":
