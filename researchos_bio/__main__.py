@@ -23,6 +23,7 @@ from .registry_lifecycle import verify_registry_lifecycle
 from .trust_anchor import verify_published_anchor
 from .auditor_acceptance import evaluate_auditor_acceptance
 from .operations import evaluate_deployment_readiness, evaluate_monitoring_snapshot
+from .independent_pilot import evaluate_independent_pilot
 
 
 def _read_json(path: str) -> dict:
@@ -162,6 +163,12 @@ def main(argv: list[str] | None = None) -> int:
     monitoring = sub.add_parser("monitoring-snapshot", help="evaluate supplied operational metrics")
     monitoring.add_argument("snapshot")
     monitoring.add_argument("--output", help="write JSON alert report")
+    independent = sub.add_parser("validate-independent-pilot", help="evaluate hash-linked pilot documentary evidence")
+    independent.add_argument("dossier")
+    independent.add_argument("package_verification")
+    independent.add_argument("auditor_acceptance")
+    independent.add_argument("pilot_evidence")
+    independent.add_argument("--output", help="write JSON pilot validation report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record) if hasattr(args, "record") else None
@@ -172,6 +179,16 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "validate-independent-pilot":
+            result = evaluate_independent_pilot(
+                _read_json(args.dossier), _read_json(args.package_verification),
+                _read_json(args.auditor_acceptance), _read_json(args.pilot_evidence))
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["documentary_pilot_gate_passed"] else 2
         elif args.command == "deployment-preflight":
             result = evaluate_deployment_readiness(_read_json(args.config), args.artifact_root)
             output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
