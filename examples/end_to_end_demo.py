@@ -86,7 +86,7 @@ def synthetic_case(root: Path) -> dict:
         "artifact_evidence_id": "ev-01", "observed_at": "2026-11-03T13:00:00Z",
         "observed_value": 103.0,
     }]}
-    return locals() | {"root": str(root)}
+    return {"record": record, "manifest": manifest, "root": str(root), "bundle": bundle,\n            "registry": registry, "attestations": attestations, "policy": policy,\n            "plan": plan, "outcomes": outcomes}
 
 
 def run(case: dict) -> dict:
