@@ -49,9 +49,19 @@ External replication and domain-specific biological validation (future)
 
 The initial state vocabulary reserves `reproduced` and `validated` for downstream independent review; this prototype never automatically assigns them. No biological subject data, patient records, real assay results, or protected health information is supplied.
 
+## Phase 2: local artifact verification
+
+The `verify-artifacts` command verifies the SHA-256 **contents of actual local files**, not just the shape of a declared digest. Provide a JSON manifest containing `schema_version`, `protocol_id`, `protocol_version`, `software_version`, `environment`, `random_seed`, and an `artifacts` array of `{ "evidence_id": "...", "path": "relative/file" }` objects. Every evidence ID must map exactly once. The manifest protocol/software versions must match the claim record.
+
+```sh
+python -m researchos_bio verify-artifacts record.json manifest.json --root ./local-artifacts --output artifact-report.json
+```
+
+Exit status 0 indicates all artifact hashes match; status 2 indicates missing or mismatched files; status 1 indicates invalid inputs or I/O errors. Paths must be relative to the declared artifact root; traversal and symlinks are rejected. This is an **integrity check**, not proof of independent replication or scientific correctness. A file may be correctly hashed yet scientifically invalid.
+
 ## Next implementation milestones
 
-1. Content-addressed artifact ingestion with local hash verification and access controls.
+1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
 2. Protocol, environment, toolchain, random seed and dataset manifests.
 3. Signed reviewer attestations and evidence independence audit workflow.
 4. Preregistered statistical/biological assay validation adapters and ground-truth benchmarks.
