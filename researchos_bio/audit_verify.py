@@ -79,10 +79,14 @@ def verify_audit_package(path: str | Path, expected_package_sha256: str,
             if len(declared) != len(evidence):
                 raise RecordError("duplicate or invalid dossier evidence IDs")
             paths = set()
+            seen_evidence_ids = set()
             for item in artifacts:
                 if not isinstance(item, dict):
                     raise RecordError("artifact manifest entry must be object")
                 eid, name = item.get("evidence_id"), item.get("path")
+                if eid in seen_evidence_ids:
+                    raise RecordError("duplicate artifact evidence ID")
+                seen_evidence_ids.add(eid)
                 if eid not in declared or not isinstance(name, str) or not name.startswith("artifacts/"):
                     raise RecordError("artifact not present in dossier or invalid path")
                 parts = name.split("/")
