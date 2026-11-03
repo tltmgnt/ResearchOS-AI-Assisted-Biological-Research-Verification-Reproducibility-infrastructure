@@ -278,6 +278,16 @@ python -m researchos_bio verify-registry-lifecycle snapshots.json events.json si
 
 See [Trust Registry Lifecycle](docs/REGISTRY_LIFECYCLE.md). The supplied snapshots, assignments, timestamps and checkpoint require **external authentication**; the software cannot prove contemporaneous enrollment or physical custody.
 
+## Phase 19: externally signed trust-anchor checkpoints
+
+The `verify-published-anchor` command checks a portable checkpoint's package, custody and registry SHA-256 bindings against expected values, validates a separately pinned publisher registry and verifies Ed25519 signatures from at least two configured publishing organizations.
+
+```sh
+python -m researchos_bio verify-published-anchor checkpoint.json attestations.json publisher-registry.json PINNED_PUBLISHER_REGISTRY_SHA256 EXPECTED_PACKAGE_SHA256 EXPECTED_CUSTODY_HEAD_SHA256 EXPECTED_REGISTRY_HEAD_SHA256 --output publication-report.json
+```
+
+See [Trust-Anchor Publication](docs/TRUST_ANCHOR_PUBLICATION.md). **External publication is not performed by the CLI**; independent registry authentication, publication receipts and timestamp verification require separate infrastructure.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
