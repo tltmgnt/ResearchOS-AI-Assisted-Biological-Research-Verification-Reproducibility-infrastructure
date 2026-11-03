@@ -21,6 +21,7 @@ from .audit_verify import verify_audit_package, append_custody_event
 from .signed_custody import verify_signed_custody
 from .registry_lifecycle import verify_registry_lifecycle
 from .trust_anchor import verify_published_anchor
+from .auditor_acceptance import evaluate_auditor_acceptance
 
 
 def _read_json(path: str) -> dict:
@@ -149,6 +150,10 @@ def main(argv: list[str] | None = None) -> int:
     published.add_argument("expected_registry_head_sha256")
     published.add_argument("--minimum-publishers", type=int, default=2)
     published.add_argument("--output", help="write JSON verification report")
+    acceptance = sub.add_parser("auditor-acceptance", help="run fixed positive/negative external auditor software checks")
+    acceptance.add_argument("suite")
+    acceptance.add_argument("fixture_root")
+    acceptance.add_argument("--output", help="write JSON acceptance report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record) if hasattr(args, "record") else None
@@ -159,6 +164,15 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "auditor-acceptance":
+            result = evaluate_auditor_acceptance(
+                _read_json(args.suite), args.fixture_root)
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["all_software_acceptance_scenarios_passed"] else 2
         elif args.command == "verify-published-anchor":
             result = verify_published_anchor(
                 _read_json(args.checkpoint), _read_json(args.attestations),

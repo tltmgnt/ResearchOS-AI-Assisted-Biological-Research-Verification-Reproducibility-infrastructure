@@ -298,6 +298,16 @@ python -m researchos_bio verify-audit-package audit.zip EXPECTED_SHA256 --max-to
 
 See [Security Threat Model](docs/SECURITY_THREAT_MODEL.md) for adversarial scenarios, mitigations and residual risks. This is **not** a completed independent penetration test or production security sign-off.
 
+## Phase 21: external auditor acceptance suite
+
+The `auditor-acceptance` command executes six fixed positive/negative software verification scenarios for audit packages and signed publisher checkpoints. It rejects missing, duplicated or inverted expectations and produces a deterministic fingerprinted report.
+
+```sh
+python -m researchos_bio auditor-acceptance suite.json ./fixtures --output acceptance-report.json
+```
+
+See [Auditor Acceptance Protocol](docs/AUDITOR_ACCEPTANCE.md). Passing this suite **does not mean an independent auditor has executed or approved it**; real external sign-off and authentic registry/checkpoint evidence remain required.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
