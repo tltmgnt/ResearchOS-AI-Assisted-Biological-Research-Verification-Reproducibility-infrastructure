@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 from .core import RecordError, evaluate_record, verify_report
 from .artifacts import verify_artifacts
+from .reviews import evaluate_reviews, verify_review_report
 
 
 def _read_json(path: str) -> dict:
@@ -26,6 +27,14 @@ def main(argv: list[str] | None = None) -> int:
     art.add_argument("manifest")
     art.add_argument("--root", required=True, help="directory containing local artifacts")
     art.add_argument("--output", help="write JSON integrity report")
+    review = sub.add_parser("review", help="assess self-declared independent reviews")
+    review.add_argument("record")
+    review.add_argument("bundle")
+    review.add_argument("--output", help="write JSON review report")
+    review_verify = sub.add_parser("verify-review", help="recompute review report")
+    review_verify.add_argument("record")
+    review_verify.add_argument("bundle")
+    review_verify.add_argument("report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record)
@@ -36,6 +45,17 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "review":
+            result = evaluate_reviews(record, _read_json(args.bundle))
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+        elif args.command == "verify-review":
+            if not verify_review_report(record, _read_json(args.bundle), _read_json(args.report)):
+                raise RecordError("review report does not match recomputed evaluation")
+            print("Review report verified against record and bundle")
         elif args.command == "verify-artifacts":
             result = verify_artifacts(record, _read_json(args.manifest), args.root)
             output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
