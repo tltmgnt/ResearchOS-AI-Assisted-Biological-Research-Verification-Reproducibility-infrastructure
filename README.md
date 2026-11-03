@@ -201,6 +201,12 @@ python -m researchos_bio verify-external-audit pilot-report.json audit-trust-reg
 
 See [External Audit Handoff](docs/EXTERNAL_AUDIT.md) for signing payloads, schemas and evaluator procedures. **Key-based authentication does not independently prove evaluator identity, scientific reproduction or biological validity.** All claims of scientific validation remain false.
 
+## Phase 11: release candidate and operational hardening
+
+The release-candidate workflow builds wheel and source distributions, installs the wheel, runs the complete regression suite and synthetic integration demonstration, validates distribution metadata, and archives a candidate build artifact. The workflow tests Python 3.11, 3.12 and 3.13. CLI regression tests protect the `assess-pilot` and `verify-external-audit` commands, which do not take a record argument.
+
+See [Release Candidate Operational Readiness](docs/RELEASE_CANDIDATE.md) for exact-commit CI gates, dependency and key management controls, negative controls, and external audit requirements. This is **software release preparation**, not scientific certification or production approval.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
