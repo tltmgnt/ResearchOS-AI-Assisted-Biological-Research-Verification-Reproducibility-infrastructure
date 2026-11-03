@@ -288,6 +288,16 @@ python -m researchos_bio verify-published-anchor checkpoint.json attestations.js
 
 See [Trust-Anchor Publication](docs/TRUST_ANCHOR_PUBLICATION.md). **External publication is not performed by the CLI**; independent registry authentication, publication receipts and timestamp verification require separate infrastructure.
 
+## Phase 20: audit archive security hardening
+
+The audit ZIP exporter now enforces an aggregate content limit and computes the final package fingerprint incrementally. Standalone ZIP verification additionally rejects unsafe control-character paths, nonregular Unix entries, oversized metadata and excessive archive member counts.
+
+```sh
+python -m researchos_bio verify-audit-package audit.zip EXPECTED_SHA256 --max-total-bytes 500000000 --max-members 10000 --max-metadata-bytes 10000000
+```
+
+See [Security Threat Model](docs/SECURITY_THREAT_MODEL.md) for adversarial scenarios, mitigations and residual risks. This is **not** a completed independent penetration test or production security sign-off.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
