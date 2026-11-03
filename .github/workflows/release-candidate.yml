@@ -1,0 +1,39 @@
+name: Release candidate verification
+on:
+  push:
+  pull_request:
+jobs:
+  release-checks:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install build tooling
+        run: python -m pip install --upgrade build
+      - name: Build sdist and wheel
+        run: python -m build
+      - name: Install wheel
+        run: python -m pip install dist/*.whl
+      - name: Full regression suite
+        run: python -m unittest discover -s tests -v
+      - name: End-to-end synthetic smoke test
+        run: python examples/end_to_end_demo.py > /tmp/researchos-e2e.json
+      - name: CLI command discovery
+        run: python -m researchos_bio --help
+      - name: Validate build distributions
+        run: |
+          python -m pip install twine
+          python -m twine check dist/*
+      - name: Upload release candidate distributions
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: researchos-release-candidate
+          path: dist/*
+          retention-days: 14
