@@ -96,6 +96,13 @@ class AssuranceTests(unittest.TestCase):
         self.assertEqual(item["advisory_gate"], "contested")
         self.assertEqual(item["challenge_review_ids"], ["review-1"])
 
+    def test_same_operator_cannot_pass_review_gate(self):
+        self.review["reviewer_id"] = "demo-operator"
+        self.registry["keys"][0]["reviewer_id"] = "demo-operator"
+        result = self.assess()["claims"][0]
+        self.assertEqual(result["advisory_gate"], "needs_review")
+        self.assertEqual(result["shared_operator_review_ids"], ["review-1"])
+
     def test_conflict_disclosure_blocks(self):
         self.review["conflicts_of_interest"] = ["prior collaboration"]
         self.assertEqual(self.assess()["claims"][0]["advisory_gate"], "needs_review")
