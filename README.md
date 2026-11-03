@@ -6,7 +6,7 @@ ResearchOS is an early-stage, **model-agnostic research-assurance prototype** fo
 
 ## Quick start
 
-Requires Python 3.11+; no third-party runtime dependencies.
+Requires Python 3.11+. Phase 4 Ed25519 verification requires the `cryptography` package. Install with `python -m pip install -e .`.
 
 ```sh
 python -m researchos_bio evaluate examples/synthetic_record.json --output report.json
@@ -58,6 +58,30 @@ python -m researchos_bio verify-artifacts record.json manifest.json --root ./loc
 ```
 
 Exit status 0 indicates all artifact hashes match; status 2 indicates missing or mismatched files; status 1 indicates invalid inputs or I/O errors. Paths must be relative to the declared artifact root; traversal and symlinks are rejected. This is an **integrity check**, not proof of independent replication or scientific correctness. A file may be correctly hashed yet scientifically invalid.
+
+## Phase 4: cryptographic reviewer attestations
+
+Ed25519 signatures authenticate a review's exact JSON contents and its bound source record hash against an **operator-provisioned public-key trust registry**. Signatures are domain-separated (`researchos.review-attestation.v1`) and use canonical JSON bytes.
+
+```sh
+python -m researchos_bio verify-attestations record.json review-bundle.json trusted-keys.json signatures.json --output signature-report.json
+```
+
+`trusted-keys.json` must be provisioned separately by the trusted operator:
+
+```json
+{"schema_version":"1.0","keys":[{"key_id":"key-1","reviewer_id":"reviewer-1","public_key_b64":"<base64-encoded raw 32-byte Ed25519 public key>"}]}
+```
+
+`signatures.json` format:
+
+```json
+{"schema_version":"1.0","signatures":[{"review_id":"review-1","key_id":"key-1","signature_b64":"<base64-encoded raw 64-byte Ed25519 signature>"}]}
+```
+
+A signer signs the output of `attestation_payload(record, review)` from `researchos_bio.attestations` using their securely stored Ed25519 private key. **Never commit private keys or sensitive biological/patient data.** The CLI returns 0 when all reviews have valid trusted signatures, 2 for missing/invalid/untrusted signatures, and 1 for malformed input. The report fingerprints the trust registry and signatures to support later replay.
+
+**Trust boundary:** the registry must be authenticated and distributed out-of-band. Signature verification proves possession of a corresponding private key, **not** real-world reviewer identity, absence of collusion, experimental reproducibility, or biological validity. Key rotation, revocation, certificate chains and independent identity proofing are not yet implemented.
 
 ## Next implementation milestones
 

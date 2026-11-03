@@ -7,6 +7,7 @@ import sys
 from .core import RecordError, evaluate_record, verify_report
 from .artifacts import verify_artifacts
 from .reviews import evaluate_reviews, verify_review_report
+from .attestations import verify_attestations
 
 
 def _read_json(path: str) -> dict:
@@ -35,6 +36,12 @@ def main(argv: list[str] | None = None) -> int:
     review_verify.add_argument("record")
     review_verify.add_argument("bundle")
     review_verify.add_argument("report")
+    att = sub.add_parser("verify-attestations", help="verify signed reviews against trusted public keys")
+    att.add_argument("record")
+    att.add_argument("bundle")
+    att.add_argument("trust_registry")
+    att.add_argument("attestations")
+    att.add_argument("--output", help="write JSON signature verification report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record)
@@ -45,6 +52,15 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "verify-attestations":
+            result = verify_attestations(record, _read_json(args.bundle),
+                                         _read_json(args.trust_registry), _read_json(args.attestations))
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["all_reviews_signed"] else 2
         elif args.command == "review":
             result = evaluate_reviews(record, _read_json(args.bundle))
             output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
