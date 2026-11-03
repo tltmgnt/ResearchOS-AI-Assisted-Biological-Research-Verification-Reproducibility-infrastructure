@@ -155,6 +155,18 @@ Outcomes shape:
 
 The acceptance rule is `abs(observed_value - reference_value) <= absolute_tolerance`, inclusive. Missing, duplicated, out-of-plan, invalid, or nonfinite values are handled explicitly. Exit code 0 means all planned numeric results fall within tolerance, 2 means missing or outside-tolerance results, and 1 means invalid input. **Do not interpret a within-tolerance result as verified biological replication.** Neither the registration timestamp nor source results are authenticated by this module; scientific protocols, independence, raw artifact integrity, statistical appropriateness, and preregistration timing require external audit.
 
+## Phase 7: unified, non-certifying assurance records
+
+`assemble-assurance` **recomputes** all earlier verification layers rather than trusting previously generated reports. It links each claim to file integrity, signed reviewer declarations, governance readiness, and preregistered numerical comparison outcomes. The output includes the SHA-256 fingerprints of all underlying layer reports and a deterministic packet fingerprint.
+
+```sh
+python -m researchos_bio assemble-assurance record.json manifest.json ./artifacts review-bundle.json trusted-keys.json signatures.json policy.json benchmark-plan.json outcomes.json --output assurance-report.json
+```
+
+An `assurance_packet_complete` flag is set only if the underlying artifacts match, the administrative review quorum is ready, qualifying reviewer declarations have trusted valid signatures, and the benchmark comparison is within its preregistered tolerance. All planned claims must have benchmark entries. Missing or failed checks block completeness. CLI exit code 0 means complete administrative packets, 2 means incomplete packets, and 1 means malformed inputs.
+
+**This is not a scientific validation or certification engine.** The report always states `scientific_validation_performed: false`, `independent_replication_verified: false`, and `scientific_claim_validated: false`. External identity, provenance, preregistration timing, independent experimental execution and domain expert scientific audits remain necessary.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
