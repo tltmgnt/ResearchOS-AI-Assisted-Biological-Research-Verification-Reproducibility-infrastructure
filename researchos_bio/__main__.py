@@ -24,6 +24,7 @@ from .trust_anchor import verify_published_anchor
 from .auditor_acceptance import evaluate_auditor_acceptance
 from .operations import evaluate_deployment_readiness, evaluate_monitoring_snapshot
 from .independent_pilot import evaluate_independent_pilot
+from .release_handoff import evaluate_release_handoff
 
 
 def _read_json(path: str) -> dict:
@@ -169,6 +170,12 @@ def main(argv: list[str] | None = None) -> int:
     independent.add_argument("auditor_acceptance")
     independent.add_argument("pilot_evidence")
     independent.add_argument("--output", help="write JSON pilot validation report")
+    release = sub.add_parser("release-handoff", help="validate versioned release-candidate handoff evidence")
+    release.add_argument("manifest")
+    release.add_argument("auditor_acceptance")
+    release.add_argument("deployment_preflight")
+    release.add_argument("independent_pilot")
+    release.add_argument("--output", help="write JSON release-candidate handoff report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record) if hasattr(args, "record") else None
@@ -179,6 +186,16 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "release-handoff":
+            result = evaluate_release_handoff(
+                _read_json(args.manifest), _read_json(args.auditor_acceptance),
+                _read_json(args.deployment_preflight), _read_json(args.independent_pilot))
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["release_candidate_documentary_gate_passed"] else 2
         elif args.command == "validate-independent-pilot":
             result = evaluate_independent_pilot(
                 _read_json(args.dossier), _read_json(args.package_verification),
