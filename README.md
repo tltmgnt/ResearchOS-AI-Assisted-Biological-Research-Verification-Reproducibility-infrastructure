@@ -247,6 +247,17 @@ python -m researchos_bio export-audit-package dossier.json ./evidence artifact-p
 
 See [Audit Package Export](docs/AUDIT_PACKAGE_EXPORT.md) for the package layout, size limits, immutable-source requirement, security considerations and independent verification steps. **Verified bytes do not establish scientific authenticity or replication.**
 
+## Phase 16: standalone audit verification and custody history
+
+The `verify-audit-package` command independently checks an exported ZIP against an externally supplied SHA-256, validates its dossier/index and recomputes every embedded source artifact hash. The `append-custody-event` command records a hash-linked, package-bound custody declaration after verifying the existing chain.
+
+```sh
+python -m researchos_bio verify-audit-package audit-package.zip EXPECTED_SHA256 --output verification.json
+python -m researchos_bio append-custody-event events.json event.json EXPECTED_SHA256 --output next-events.json
+```
+
+See [Audit Package Verification and Custody](docs/AUDIT_PACKAGE_VERIFICATION.md). Custody entries are **unsigned declarations**, not proof of real-world identity, trusted timestamps or biological validity.
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
