@@ -17,6 +17,7 @@ from .pilot_comparison import evaluate_pilot_comparison
 from .pilot_statistics import evaluate_pilot_statistics
 from .evaluation_dossier import assemble_evaluation_dossier
 from .audit_export import export_verified_audit_package
+from .audit_verify import verify_audit_package, append_custody_event
 
 
 def _read_json(path: str) -> dict:
@@ -106,6 +107,16 @@ def main(argv: list[str] | None = None) -> int:
     audit_export.add_argument("artifact_paths", help="JSON map of evidence IDs to relative source paths")
     audit_export.add_argument("destination", help="new ZIP file; existing files are not overwritten")
     audit_export.add_argument("--max-file-bytes", type=int, default=100000000)
+    verify_zip = sub.add_parser("verify-audit-package", help="independently verify a portable audit ZIP")
+    verify_zip.add_argument("package")
+    verify_zip.add_argument("expected_sha256")
+    verify_zip.add_argument("--max-total-bytes", type=int, default=500000000)
+    verify_zip.add_argument("--output", help="write JSON verification report")
+    custody = sub.add_parser("append-custody-event", help="append a hash-linked custody declaration")
+    custody.add_argument("events", help="existing JSON array of events")
+    custody.add_argument("event", help="JSON event declaration")
+    custody.add_argument("package_sha256")
+    custody.add_argument("--output", required=True, help="write new JSON custody event array")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record) if hasattr(args, "record") else None
@@ -116,6 +127,21 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "verify-audit-package":
+            result = verify_audit_package(args.package, args.expected_sha256,
+                                          max_total_bytes=args.max_total_bytes)
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0
+        elif args.command == "append-custody-event":
+            result = append_custody_event(_read_json(args.events), _read_json(args.event),
+                                          args.package_sha256)
+            Path(args.output).write_text(json.dumps(result, sort_keys=True, indent=2) + "\n",
+                                         encoding="utf-8")
+            return 0
         elif args.command == "export-audit-package":
             result = export_verified_audit_package(
                 _read_json(args.dossier), args.source_root,
