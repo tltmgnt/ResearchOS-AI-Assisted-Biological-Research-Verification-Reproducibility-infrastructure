@@ -10,6 +10,7 @@ from .reviews import evaluate_reviews, verify_review_report
 from .attestations import verify_attestations
 from .governance import evaluate_governance
 from .benchmarks import evaluate_benchmark
+from .assurance import assemble_assurance
 
 
 def _read_json(path: str) -> dict:
@@ -56,6 +57,17 @@ def main(argv: list[str] | None = None) -> int:
     benchmark.add_argument("plan")
     benchmark.add_argument("outcomes")
     benchmark.add_argument("--output", help="write JSON benchmark report")
+    assurance = sub.add_parser("assemble-assurance", help="recompute cross-layer assurance packet")
+    assurance.add_argument("record")
+    assurance.add_argument("manifest")
+    assurance.add_argument("artifact_root")
+    assurance.add_argument("bundle")
+    assurance.add_argument("trust_registry")
+    assurance.add_argument("attestations")
+    assurance.add_argument("policy")
+    assurance.add_argument("plan")
+    assurance.add_argument("outcomes")
+    assurance.add_argument("--output", help="write JSON assurance packet")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record)
@@ -66,6 +78,18 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "assemble-assurance":
+            result = assemble_assurance(
+                record, _read_json(args.manifest), args.artifact_root,
+                _read_json(args.bundle), _read_json(args.trust_registry),
+                _read_json(args.attestations), _read_json(args.policy),
+                _read_json(args.plan), _read_json(args.outcomes))
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["all_assurance_packets_complete"] else 2
         elif args.command == "evaluate-benchmark":
             result = evaluate_benchmark(record, _read_json(args.plan), _read_json(args.outcomes))
             output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
