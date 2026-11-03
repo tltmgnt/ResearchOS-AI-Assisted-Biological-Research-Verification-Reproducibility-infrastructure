@@ -16,6 +16,7 @@ from .external_audit import verify_external_audit
 from .pilot_comparison import evaluate_pilot_comparison
 from .pilot_statistics import evaluate_pilot_statistics
 from .evaluation_dossier import assemble_evaluation_dossier
+from .audit_export import export_verified_audit_package
 
 
 def _read_json(path: str) -> dict:
@@ -99,6 +100,12 @@ def main(argv: list[str] | None = None) -> int:
     dossier.add_argument("audit_report")
     dossier.add_argument("source_evidence")
     dossier.add_argument("--output", help="write JSON evaluation dossier")
+    audit_export = sub.add_parser("export-audit-package", help="verify source files and create portable audit ZIP")
+    audit_export.add_argument("dossier")
+    audit_export.add_argument("source_root")
+    audit_export.add_argument("artifact_paths", help="JSON map of evidence IDs to relative source paths")
+    audit_export.add_argument("destination", help="new ZIP file; existing files are not overwritten")
+    audit_export.add_argument("--max-file-bytes", type=int, default=100000000)
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record) if hasattr(args, "record") else None
@@ -109,6 +116,13 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "export-audit-package":
+            result = export_verified_audit_package(
+                _read_json(args.dossier), args.source_root,
+                _read_json(args.artifact_paths), args.destination,
+                max_file_bytes=args.max_file_bytes)
+            print(json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False))
+            return 0
         elif args.command == "assemble-evaluation-dossier":
             result = assemble_evaluation_dossier(
                 _read_json(args.pilot_report), _read_json(args.comparison_report),

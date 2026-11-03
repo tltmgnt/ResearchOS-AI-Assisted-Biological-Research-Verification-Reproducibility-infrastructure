@@ -237,6 +237,16 @@ python -m researchos_bio assemble-evaluation-dossier pilot-report.json compariso
 
 See [Evaluation Dossier and Evidence Traceability](docs/EVALUATION_DOSSIER.md) for inputs, validation gates and external evaluator checks. The software checks **declared** source hashes, not original source artifact bytes or biological validity.
 
+## Phase 15: source-verified portable audit packages
+
+The `export-audit-package` command reads source evidence files, checks their bytes against the Phase 14 dossier's declared SHA-256 digests, and writes a deterministic ZIP containing the dossier, manifest and verified artifacts. It rejects unsafe paths, symlinks, hash mismatches and overwrite attempts.
+
+```sh
+python -m researchos_bio export-audit-package dossier.json ./evidence artifact-paths.json audit-package.zip
+```
+
+See [Audit Package Export](docs/AUDIT_PACKAGE_EXPORT.md) for the package layout, size limits, immutable-source requirement, security considerations and independent verification steps. **Verified bytes do not establish scientific authenticity or replication.**
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).
