@@ -181,6 +181,16 @@ The demo creates temporary synthetic artifact files and private keys, then disca
 
 The example is entirely fictional: reviewer IDs, organizations, protocols, measurements, and signing keys are synthetic. The successful case demonstrates **software pipeline integration only**, not independent scientific reproduction or real-world identity assurance. A green demo is not a validation of biological claims.
 
+## Phase 9: pilot-readiness scoring and external evaluation protocol
+
+Use `assess-pilot` to calculate an auditable administrative assurance-packet completion rate across distinct claim records, with preregistered minimum sample size and completion threshold. Input reports must pass their SHA-256 integrity checks; duplicate claim records and attempts to mark scientific claims validated are rejected.
+
+```sh
+python -m researchos_bio assess-pilot assurance-packets.json pilot-policy.json --output pilot-report.json
+```
+
+See [the external pilot evaluation protocol](docs/PILOT_EVALUATION.md) for preregistration, negative controls, audit handoff, metrics, and acceptance gates. **Pilot software readiness is not independent biological replication, scientific validity, or external endorsement.**
+
 ## Next implementation milestones
 
 1. Add content-addressed artifact ingestion and access controls (local hash verification now implemented).

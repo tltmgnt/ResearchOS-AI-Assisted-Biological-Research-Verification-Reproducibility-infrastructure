@@ -11,6 +11,7 @@ from .attestations import verify_attestations
 from .governance import evaluate_governance
 from .benchmarks import evaluate_benchmark
 from .assurance import assemble_assurance
+from .pilot import assess_pilot
 
 
 def _read_json(path: str) -> dict:
@@ -68,6 +69,10 @@ def main(argv: list[str] | None = None) -> int:
     assurance.add_argument("plan")
     assurance.add_argument("outcomes")
     assurance.add_argument("--output", help="write JSON assurance packet")
+    pilot = sub.add_parser("assess-pilot", help="score assurance packet completion for a pilot")
+    pilot.add_argument("packets", help="JSON array of assurance reports")
+    pilot.add_argument("policy", help="JSON pilot readiness policy")
+    pilot.add_argument("--output", help="write JSON pilot report")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record)
@@ -78,6 +83,14 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "assess-pilot":
+            result = assess_pilot(_read_json(args.packets), _read_json(args.policy))
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["software_pilot_gate_passed"] else 2
         elif args.command == "assemble-assurance":
             result = assemble_assurance(
                 record, _read_json(args.manifest), args.artifact_root,
