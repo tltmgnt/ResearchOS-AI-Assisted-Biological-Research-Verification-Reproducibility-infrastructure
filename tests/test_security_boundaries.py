@@ -33,6 +33,12 @@ class SecurityBoundaryTests(unittest.TestCase):
     def test_normal_package_still_verifies(self):
         self.assertTrue(self.verify()["source_artifact_bytes_verified"])
 
+    def test_export_aggregate_limit(self):
+        with self.assertRaises(RecordError):
+            export_verified_audit_package(self.dossier, self.root, {"e1": "source.txt"},
+                                          self.root / "small.zip", max_total_bytes=8)
+        self.assertFalse((self.root / "small.zip").exists())
+
     def test_member_count_limit(self):
         with self.assertRaises(RecordError):
             self.verify(max_members=2)
