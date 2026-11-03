@@ -15,6 +15,7 @@ from .pilot import assess_pilot
 from .external_audit import verify_external_audit
 from .pilot_comparison import evaluate_pilot_comparison
 from .pilot_statistics import evaluate_pilot_statistics
+from .evaluation_dossier import assemble_evaluation_dossier
 
 
 def _read_json(path: str) -> dict:
@@ -91,6 +92,13 @@ def main(argv: list[str] | None = None) -> int:
     stats.add_argument("observations")
     stats.add_argument("accounting")
     stats.add_argument("--output", help="write JSON pilot statistics report")
+    dossier = sub.add_parser("assemble-evaluation-dossier", help="link pilot, comparison, statistics and audit reports")
+    dossier.add_argument("pilot_report")
+    dossier.add_argument("comparison_report")
+    dossier.add_argument("statistics_report")
+    dossier.add_argument("audit_report")
+    dossier.add_argument("source_evidence")
+    dossier.add_argument("--output", help="write JSON evaluation dossier")
     args = parser.parse_args(argv)
     try:
         record = _read_json(args.record) if hasattr(args, "record") else None
@@ -101,6 +109,17 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.output).write_text(output, encoding="utf-8")
             else:
                 print(output, end="")
+        elif args.command == "assemble-evaluation-dossier":
+            result = assemble_evaluation_dossier(
+                _read_json(args.pilot_report), _read_json(args.comparison_report),
+                _read_json(args.statistics_report), _read_json(args.audit_report),
+                _read_json(args.source_evidence))
+            output = json.dumps(result, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+            if args.output:
+                Path(args.output).write_text(output, encoding="utf-8")
+            else:
+                print(output, end="")
+            return 0 if result["administrative_dossier_complete"] else 2
         elif args.command == "pilot-statistics":
             result = evaluate_pilot_statistics(
                 _read_json(args.plan), _read_json(args.observations),
