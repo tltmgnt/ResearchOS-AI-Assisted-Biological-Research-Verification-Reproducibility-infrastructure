@@ -59,7 +59,7 @@ def verify_audit_package(path: str | Path, expected_package_sha256: str,
             if len(members) > max_members:
                 raise RecordError("ZIP member count exceeds limit")
             names = [m.filename for m in members]
-            if any(not n or "\\\\" in n or "\\x00" in n or any(ord(ch) < 32 or ord(ch) == 127 for ch in n) or any(not p or p in (".", "..") for p in n.split("/")) or n.startswith("/") or ":" in n.split("/")[0] for n in names):
+            if any(not n or chr(92) in n or chr(0) in n or any(ord(ch) < 32 or ord(ch) == 127 for ch in n) or any(not p or p in (".", "..") for p in n.split("/")) or n.startswith("/") or ":" in n.split("/")[0] for n in names):
                 raise RecordError("ZIP contains unsafe or noncanonical member name")
             if any(m.create_system == 3 and stat.S_IFMT(m.external_attr >> 16) not in (0, stat.S_IFREG) for m in members):
                 raise RecordError("ZIP contains nonregular Unix member")
