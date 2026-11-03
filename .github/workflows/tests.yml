@@ -10,6 +10,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - run: python -m pip install -e .
       - run: python -m unittest discover -s tests -v
       - run: python -m researchos_bio evaluate examples/synthetic_record.json --output /tmp/researchos-report.json
       - run: python -m researchos_bio verify examples/synthetic_record.json /tmp/researchos-report.json
