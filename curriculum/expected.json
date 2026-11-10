@@ -1,0 +1,42 @@
+{
+  "case_count": 5,
+  "cases": [
+    {
+      "actual": true,
+      "case": "exact report replays",
+      "expected": true,
+      "passed": true
+    },
+    {
+      "actual": true,
+      "case": "independent reproduction never inferred",
+      "expected": true,
+      "passed": true
+    },
+    {
+      "actual": false,
+      "case": "edited report rejected",
+      "expected": false,
+      "passed": true
+    },
+    {
+      "actual": "RecordError",
+      "case": "foreign evidence link rejected",
+      "expected": "RecordError",
+      "passed": true
+    },
+    {
+      "actual": [
+        "unverified"
+      ],
+      "case": "metadata does not promote declared statuses",
+      "expected": [
+        "unverified"
+      ],
+      "passed": true
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Synthetic curriculum checks only",
+  "status": "PASS"
+}
