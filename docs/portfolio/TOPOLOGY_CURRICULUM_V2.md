@@ -42,7 +42,7 @@ Prerequisites: basic programming, sets, functions and graph vocabulary. Work in 
 
 ## Worked reasoning and source explanation
 
-evaluate_record() checks claim/evidence linkage and summarizes recorded verdicts without changing current_status. verify_report() recomputes the full deterministic report, so changing its digest is rejected. A claim that references an unknown evidence ID fails RecordError before evaluation. Every decision continues to report independent_replication_verified=False even when metadata checks pass.
+evaluate_record() checks claim/evidence linkage and summarizes recorded verdicts without changing current_status. verify_report() recomputes the full deterministic report, so changing its digest is rejected. A claim that references an unknown evidence ID fails RecordError before evaluation. Every decision continues to report independent_replication_verified=False even when metadata checks pass. The lab loads the standalone core directly; it does not import optional cryptographic attestation tooling or validate signatures.
 
 Read the [inspected source](https://github.com/tltmgnt/ResearchOS-AI-Assisted-Biological-Research-Verification-Reproducibility-infrastructure/blob/7af5a890ffbcbe960380b29b27f18e2d1fb25003/researchos_bio/core.py) alongside the [executable answer key](../../curriculum/lab.py). The source link is pinned to the inspected revision; the lab and any explicitly described fix are in this change.
 

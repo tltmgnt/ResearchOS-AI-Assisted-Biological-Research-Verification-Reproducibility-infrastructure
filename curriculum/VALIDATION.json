@@ -3,7 +3,7 @@
   "command": "python curriculum/lab.py --verify",
   "exit_code": 0,
   "expected_sha256": "6f17234735381c89421a0d464d4072f7c5358b4c210e21f4bb9f2a25ebf5d1c4",
-  "lab_sha256": "2f44d03624f8e7ae84843a21de322d2a87d0b0677cf0222188569ff51c8ef490",
+  "lab_sha256": "1bcb713d35092b1f9a02022810df42b7aa19368d88ce50ddb543b02bbe6bb45b",
   "python": "3.12.14",
   "repository": "tltmgnt/ResearchOS-AI-Assisted-Biological-Research-Verification-Reproducibility-infrastructure",
   "schema_version": 1,
@@ -19,5 +19,9 @@
     "researchos_bio/reviews.py": "213f65c82a29801bdbc956e79db53b6b003db4761a8dc135b930e7ed401b769d"
   },
   "source_base_commit": "7af5a890ffbcbe960380b29b27f18e2d1fb25003",
+  "standard_library_only_probe": {
+    "command": "python -S curriculum/lab.py --verify",
+    "exit_code": 0
+  },
   "wrong_expectation_exit_code": 1
 }

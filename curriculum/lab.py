@@ -31,8 +31,17 @@ def sample(path):
 
 
 
+def leaf(path):
+    # Exercise the standalone core without importing optional attestation tooling.
+    spec = importlib.util.spec_from_file_location("curriculum_subject", ROOT / path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
 def run():
-    from researchos_bio.core import evaluate_record, verify_report, RecordError
+    core = leaf("researchos_bio/core.py")
+    evaluate_record, verify_report, RecordError = core.evaluate_record, core.verify_report, core.RecordError
     data = sample("examples/synthetic_record.json")
     r = evaluate_record(data)
     check("exact report replays", verify_report(data,r), True)
