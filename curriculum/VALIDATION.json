@@ -1,0 +1,23 @@
+{
+  "case_count": 5,
+  "command": "python curriculum/lab.py --verify",
+  "exit_code": 0,
+  "expected_sha256": "6f17234735381c89421a0d464d4072f7c5358b4c210e21f4bb9f2a25ebf5d1c4",
+  "lab_sha256": "2f44d03624f8e7ae84843a21de322d2a87d0b0677cf0222188569ff51c8ef490",
+  "python": "3.12.14",
+  "repository": "tltmgnt/ResearchOS-AI-Assisted-Biological-Research-Verification-Reproducibility-infrastructure",
+  "schema_version": 1,
+  "scope": "Local synthetic curriculum validation on the recorded source snapshot; not complete repository CI, learning outcomes, independent scientific reproduction or deployment approval",
+  "source_and_fixture_sha256": {
+    "examples/synthetic_record.json": "374b3f3550890f7159f4a941da0bf3529c39c2ce876ac6835be167537b41ee23",
+    "researchos_bio/__init__.py": "2c1214089977a01c7a3fc24b2b64c9884dea8932bd43bc703c345405b39fcda4",
+    "researchos_bio/__main__.py": "ad161459bb90c3012aa18ead7e914aebbd20c3b2033d3b3730653281152c540a",
+    "researchos_bio/artifacts.py": "204dde22d786c1c7d9f4b6e2765d597d4913fb1459cedd45858c14da8a85de80",
+    "researchos_bio/assurance.py": "64641d09eede0ff9fa6dd2b5008534e1f0f25466f69a69896ff06cfac238eaa8",
+    "researchos_bio/attestations.py": "79775ab7fd296226554d8a5b88a3efaaa4320d2cce0e3b4203e6f3b895b40efb",
+    "researchos_bio/core.py": "c9c750fe6bba8be6da2223a5df877b9ebfca516250cc2dfac69dcc0ae45fe69e",
+    "researchos_bio/reviews.py": "213f65c82a29801bdbc956e79db53b6b003db4761a8dc135b930e7ed401b769d"
+  },
+  "source_base_commit": "7af5a890ffbcbe960380b29b27f18e2d1fb25003",
+  "wrong_expectation_exit_code": 1
+}

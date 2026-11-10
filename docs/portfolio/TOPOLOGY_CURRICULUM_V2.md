@@ -1,6 +1,6 @@
 # Topology compatibility and curriculum v2 — ResearchOS-AI-Assisted-Biological-Research-Verification-Reproducibility-infrastructure
 
-Version 2 adapts the explicit-molecular-graph teaching pattern to this repository's actual role. This is documentation and a learning/decision framework; it introduces no mathematical engine, runtime dependency or operational permission.
+The verified edition of version 2 adapts the explicit-molecular-graph teaching pattern to this repository's actual role. This edition adds executable learning checks and reviewed answer keys. It does not introduce a new topology engine or grant operational permission.
 
 ## Repository decision
 
@@ -40,47 +40,53 @@ Prerequisites: basic programming, sets, functions and graph vocabulary. Work in 
 | 5. Comparison | Justify mathematical necessity and cost. | Complete the six-criterion card for the existing approach and one proposed alternative; record unknowns honestly. | Evidence-backed recommendation with baseline and explicit veto conditions. |
 | 6. Reproduction | Communicate the bounded result. | Reproduce the capstone using existing offline fixtures and record software version, inputs, outputs and limitations. | Reviewable notebook or report distinguishing computation, replay, independent evaluation and authorization. |
 
-## Source-linked reading laboratory
+## Worked reasoning and source explanation
 
-The table is a guided selection of source lines, not an assertion that the whole repository is covered. Line numbers refer to the inspected source blob `46da339487a2ad3eb7a6c31850e6038a60a23102` in [researchos_bio/core.py](../../researchos_bio/core.py). Recheck anchors after source changes.
+evaluate_record() checks claim/evidence linkage and summarizes recorded verdicts without changing current_status. verify_report() recomputes the full deterministic report, so changing its digest is rejected. A claim that references an unknown evidence ID fails RecordError before evaluation. Every decision continues to report independent_replication_verified=False even when metadata checks pass.
 
-| Line | Statement | Learning check |
+Read the [inspected source](https://github.com/tltmgnt/ResearchOS-AI-Assisted-Biological-Research-Verification-Reproducibility-infrastructure/blob/7af5a890ffbcbe960380b29b27f18e2d1fb25003/researchos_bio/core.py) alongside the [executable answer key](../../curriculum/lab.py). The source link is pinned to the inspected revision; the lab and any explicitly described fix are in this change.
+
+## Run the worked laboratory
+
+From the repository root, with Python 3.12 (the recorded local version is 3.12.14):
+
+```sh
+python curriculum/lab.py --verify
+```
+
+The lab checks **5 explicit expectations** against existing repository functions. It prints a JSON case report and exits nonzero on a wrong result. `--verify` additionally compares the entire case report with [expected.json](../../curriculum/expected.json). Read the input and predict each result before opening the answer key. No API account, credentials, model download, trading action or equipment connection is needed.
+
+| Checkpoint | Expected answer |
+| --- | --- |
+| exact report replays | `true` |
+| independent reproduction never inferred | `true` |
+| edited report rejected | `false` |
+| foreign evidence link rejected | `"RecordError"` |
+| metadata does not promote declared statuses | `["unverified"]` |
+
+The comparisons above encode independently specified small examples and contract expectations; a passing answer key is not evidence of complete domain correctness. The original functions and their existing test suites remain the authority for broader supported contracts.
+
+## Learner tasks and assessment rubric
+
+1. Before running the lab, predict every expected answer and derive one numeric result or state transition by hand.
+2. Explain the worked reasoning above using the referenced source, including the rejected or counterexample case.
+3. Add a new valid example and a nearby failing example. Explain which assumption changes, then compare against the existing implementation. For concept/static labs, keep the result explicitly at that level.
+4. Complete the scorecard for a proposed extension and a simpler baseline. Leave measurements unknown until collected; a task that the baseline already solves is not evidence for additional topology.
+
+| Competency | Points | Full-credit evidence |
 | --- | --- | --- |
-| [20](../../researchos_bio/core.py#L20) | `class RecordError(ValueError):` | State the input/output contract and trace one normal and one failing case. |
-| [24](../../researchos_bio/core.py#L24) | `def canonical_bytes(value: Any) -> bytes:` | State the input/output contract and trace one normal and one failing case. |
-| [26](../../researchos_bio/core.py#L26) | `return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False).encode("utf-8")` | Predict the returned value and distinguish a computed result from authorization. |
-| [28](../../researchos_bio/core.py#L28) | `raise RecordError("Record is not canonically serializable") from exc` | Construct the triggering input and explain why rejection preserves the contract. |
-| [31](../../researchos_bio/core.py#L31) | `def sha256_data(value: Any) -> str:` | State the input/output contract and trace one normal and one failing case. |
-| [32](../../researchos_bio/core.py#L32) | `return hashlib.sha256(canonical_bytes(value)).hexdigest()` | Explain the exact bytes bound by the digest and why hashing does not authenticate the source. |
-| [35](../../researchos_bio/core.py#L35) | `def _nonempty(value: Any, name: str) -> str:` | State the input/output contract and trace one normal and one failing case. |
-| [37](../../researchos_bio/core.py#L37) | `raise RecordError(f"{name} must be a nonempty string")` | Construct the triggering input and explain why rejection preserves the contract. |
-| [38](../../researchos_bio/core.py#L38) | `return value` | Predict the returned value and distinguish a computed result from authorization. |
-| [41](../../researchos_bio/core.py#L41) | `def _id_sequence(items: Any, label: str) -> tuple[str, ...]:` | State the input/output contract and trace one normal and one failing case. |
-| [43](../../researchos_bio/core.py#L43) | `raise RecordError(f"{label} must be a list of nonempty strings")` | Construct the triggering input and explain why rejection preserves the contract. |
-| [45](../../researchos_bio/core.py#L45) | `raise RecordError(f"{label} must not contain duplicates")` | Construct the triggering input and explain why rejection preserves the contract. |
-| [46](../../researchos_bio/core.py#L46) | `return tuple(items)` | Predict the returned value and distinguish a computed result from authorization. |
-| [49](../../researchos_bio/core.py#L49) | `def _iso_time(value: Any, name: str) -> str:` | State the input/output contract and trace one normal and one failing case. |
-| [54](../../researchos_bio/core.py#L54) | `raise RecordError(f"{name} must be ISO-8601") from exc` | Construct the triggering input and explain why rejection preserves the contract. |
-| [56](../../researchos_bio/core.py#L56) | `raise RecordError(f"{name} must include a timezone offset")` | Construct the triggering input and explain why rejection preserves the contract. |
-| [57](../../researchos_bio/core.py#L57) | `return value` | Predict the returned value and distinguish a computed result from authorization. |
-| [61](../../researchos_bio/core.py#L61) | `class Evidence:` | State the input/output contract and trace one normal and one failing case. |
-| [74](../../researchos_bio/core.py#L74) | `def parse(cls, data: dict[str, Any]) -> "Evidence":` | State the input/output contract and trace one normal and one failing case. |
-| [76](../../researchos_bio/core.py#L76) | `raise RecordError("evidence item must be an object")` | Construct the triggering input and explain why rejection preserves the contract. |
-| [81](../../researchos_bio/core.py#L81) | `raise RecordError("artifact_sha256 must be a lowercase SHA-256 hex digest")` | Construct the triggering input and explain why rejection preserves the contract. |
-| [84](../../researchos_bio/core.py#L84) | `raise RecordError("evidence verdict must be pass, fail or uncertain")` | Construct the triggering input and explain why rejection preserves the contract. |
-| [88](../../researchos_bio/core.py#L88) | `raise RecordError("evidence cannot claim independence from itself")` | Construct the triggering input and explain why rejection preserves the contract. |
-| [91](../../researchos_bio/core.py#L91) | `raise RecordError("notes must be a string")` | Construct the triggering input and explain why rejection preserves the contract. |
-## Assessment and verification
+| Model and contract | 0–3 | Correct objects, relation direction, labels/units, input bounds and missingness. |
+| Derivation and trace | 0–3 | Hand derivation agrees with the specified fixture; source steps explain why. |
+| Counterexample | 0–3 | New failing/boundary case has a justified expected result; rejection is not suppressed. |
+| Scope and necessity | 0–3 | Distinguishes software behavior from validation and compares an explicit simpler alternative. |
 
-A learner must explain the model, trace the capstone, identify a counterexample and state the scope boundary. Assess these four competencies equally; a numerical score cannot compensate for an unsupported scientific or operational claim.
+Completion requires at least 10/12 and no zero in scope/necessity. A runnable answer key alone is not evidence that a learner achieved this competency. No learner-outcome study has been performed.
 
-Relevant existing checks:
+## Verification evidence and maintenance
 
-- [tests/test_artifacts.py](../../tests/test_artifacts.py)
-- [tests/test_assurance.py](../../tests/test_assurance.py)
-- [tests/test_attestations.py](../../tests/test_attestations.py)
+[VALIDATION.json](../../curriculum/VALIDATION.json) records the inspected base revision, local Python version, source/fixture hashes, lab/answer hashes, case count and exit codes. All cases were executed locally. An in-memory copy with a deliberately wrong comparison was also executed and returned nonzero, checking that the grading failure path is active. Those injected failures are harness checks, not scientific adversarial evaluations.
 
-Follow [README](../../README.md) for environment and installed-package instructions. Read scripts before execution; source-reading exercises do not authorize provider calls, model downloads, live orders, hardware actions or messages. Synthetic fixtures establish software behavior only. This documentation change does not report those exercises as already executed.
+The dedicated [curriculum workflow](../../.github/workflows/curriculum.yml) runs the same `--verify` command on relevant pull-request changes. CI status is reported by GitHub; the local record does not assert that remote CI passed. Existing full-suite and installed-package requirements still apply to runtime changes. When source or fixture semantics change, inspect the diff and rederive answers before updating expected.json. Never regenerate expected answers solely to silence a failure. Refresh the local validation record after an actual run; do not rewrite its recorded base revision as if a new run occurred.
 
 ## Interoperability and adoption gate
 
